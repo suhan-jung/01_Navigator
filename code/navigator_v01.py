@@ -12,13 +12,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import stats
 import math
+import datetime
 
 # %% 기준일과 매칭할 날짜 수 setting
-# input_end_date = datetime.date(2019, 12, 11)
-
-
+input_end_date = datetime.date(2019, 12, 12)
 input_days_window = 2
-input_resample_minutes = 5
+input_resample_minutes = 10
 days_after = 1
 
 # In[2]:
@@ -55,7 +54,7 @@ list_day = df.resample('D') \
 # df.loc['2019-12-04':'2019-12-05']
 
 # 매칭할 날짜 세팅
-input_end_date = list_day[-1]
+# input_end_date = list_day[-1] # data중 마지막 날짜로 세팅하는 경우
 
 
 # %% 날짜 list에서 패턴 매칭대상 start_date, end_date 가져오기
@@ -141,14 +140,14 @@ import eikon as ek
 ek.set_app_key('f2281c91621d4279b832b42dc848b573dc4ea62a')
 try:
     df_eikon = ek.get_timeseries(["10TBc1"], 
-                           start_date="2019-12-12",
+                           start_date="2019-12-13",
                            end_date = "2019-12-13",
                            interval = "minute"
                            )
 except:
     moves_target_after_scaled = []
 else:
-    df_eikon = df_eikon.resample('5T', closed='right').agg({'OPEN': 'first',
+    df_eikon = df_eikon.resample(str(input_resample_minutes) + 'T', closed='right').agg({'OPEN': 'first',
                             'HIGH': 'max',
                             'LOW': 'min',
                             'CLOSE': 'last',
