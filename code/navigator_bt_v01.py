@@ -30,7 +30,7 @@ df = df.resample(str(resample_minutes) + 'T', closed='right').agg({
 
 # %% df 2019와 이전으로 나누기
 df_data = df[:date_split]
-df_match = df[date_split:'2019-01-31']
+df_match = df[date_split:'2019-06-30']
 
 # In[14]: 날짜 list 만들기
 list_dates_data = df_data.resample('D') \
@@ -90,7 +90,7 @@ list_price_chg_forecast = []
 for np_moves_match in tqdm(list_match_moves): # match_moves의 각 하루치 일자 당 반복하며
     list_dtw = []
     price_chg_forecast = 0
-    for np_moves_data in tqdm(list_data_moves):
+    for np_moves_data in (list_data_moves):
         d, _, _, _ = accelerated_dtw(stats.zscore(np_moves_match), stats.zscore(np_moves_data), 'euclidean')
         list_dtw.append(d)
         list_rank = stats.rankdata(list_dtw).tolist()
