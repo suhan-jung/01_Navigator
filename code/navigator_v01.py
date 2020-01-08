@@ -15,10 +15,11 @@ import math
 import datetime
 
 # %% 기준일과 매칭할 날짜 수 setting
-input_end_date = datetime.date(2019, 12, 12)
+input_end_date = datetime.date(2019, 12, 16)
 input_days_window = 2
 input_resample_minutes = 10
-days_after = 1
+input_days_after = 1
+bool_eikon = False
 
 # In[2]:
 
@@ -47,15 +48,8 @@ list_day = df.resample('D') \
                     .dt.date \
                         .to_numpy().tolist()
 
-
-# df_new = pd.to_datetime(df.index)
-# test = pd.to_datetime(df['Datetime']).dt.floor('d')
-
-# df.loc['2019-12-04':'2019-12-05']
-
 # 매칭할 날짜 세팅
 # input_end_date = list_day[-1] # data중 마지막 날짜로 세팅하는 경우
-
 
 # %% 날짜 list에서 패턴 매칭대상 start_date, end_date 가져오기
 x_start_date = list_day[(list_day.index(input_end_date) - input_days_window + 1)].isoformat()
@@ -108,7 +102,7 @@ plt.grid(b=True)
 minutes_per_day = 405
 points_per_day = math.ceil(minutes_per_day / input_resample_minutes)
 points_before = points_per_day * input_days_window
-points_after = points_per_day * days_after
+points_after = points_per_day * input_days_after
 
 x = np.linspace(-points_before + 1,points_after, points_before + points_after )
 
@@ -117,7 +111,7 @@ for rank in range(1,max_rank+1):
     dtw = list_dtw[index]
     moves_before = df.loc[list_start_date[index].isoformat():list_end_date[index].isoformat()]['CLOSE'].to_numpy()
     moves_after = df.loc[list_day[list_day.index(list_end_date[index]) + 1].isoformat():
-                         list_day[min(list_day.index(list_end_date[index]) + days_after, len(list_day) - 1)].isoformat()]['CLOSE'].to_numpy()
+                         list_day[min(list_day.index(list_end_date[index]) + input_days_after, len(list_day) - 1)].isoformat()]['CLOSE'].to_numpy()
     pivot_price = moves_before[-1]
     moves_before_scaled = moves_before - pivot_price
     moves_after_scaled = moves_after - pivot_price
@@ -134,14 +128,23 @@ for rank in range(1,max_rank+1):
 pivot_price_target = np_moves_target[-1]
 moves_target_before_scaled = np_moves_target - pivot_price_target
 
+list_day.index(input_end_date)
+
+# %%
+#moves_target_after = df.loc[list_day[list_day.index(input_end_date) + 1].isoformat():
+#                     list_day[min(list_day.index(list_end_date[index]) + input_days_after, len(list_day) - 1)].isoformat()]['CLOSE'].to_numpy()
+
+#list_day.index(input_end_date)
+
+
 # eikon 현재data retrieve
 import eikon as ek
 
 ek.set_app_key('f2281c91621d4279b832b42dc848b573dc4ea62a')
 try:
     df_eikon = ek.get_timeseries(["10TBc1"], 
-                           start_date="2019-12-13",
-                           end_date = "2019-12-13",
+                           start_date="2019-12-18",
+                           end_date = "2019-12-19",
                            interval = "minute"
                            )
 except:
@@ -166,7 +169,7 @@ moves_target_scaled = np.concatenate((
 plt.plot(x, moves_target_scaled,'r-', label=x_end_date, linewidth=3.0)
 plt.legend(loc=2)
 
-
+# 추가할것 : 변동성 이동평균 반
 # %%
 
 '''
@@ -180,7 +183,7 @@ moves_before_scaled =
 
 
 # %% plot_overlay_pivot function
-def plot_overlay_pivot(df_data, list_start_date, list_end_date, list_label, days_after ):
+def plot_overlay_pivot(df_data, list_start_date, list_end_date, list_label, input_days_after ):
     list_daily = df_data.resample('D').last().dropna() \
         .drop(['Open', 'High', 'Low', 'Volume', 'OpenInterest'], axis=1) \
             .reset_index()['Datetime'].dt.date.to_numpy().tolist()
