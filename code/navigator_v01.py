@@ -1,9 +1,55 @@
-#!/usr/bin/env python
-# coding: utf-8
+# %%
+import pymysql
+import datetime
 
-# # Python
+conn = pymysql.connect(host='localhost', user='root', password='mysql_rootuser', db='market_data',charset='utf8mb4')
+curs = conn.cursor(pymysql.cursors.DictCursor)
+#curs = conn.cursor()
 
-# ## pandas
+sql = 'select Date from lktb order by Date DESC LIMIT 1'
+curs.execute(sql)
+row = curs.fetchall()
+
+conn.close()
+
+end_date_db = row[0]['Date'].date()
+start_date_eikon = end_date_db + datetime.timedelta(days=1) # eikon 조회용 start_date
+
+date_today = datetime.datetime.now().date()
+
+# eikon 조회용 end_date : 장중 여부에 따라 -1 day
+if(datetime.datetime.now().time() < datetime.time(16,00,00)):
+    end_date_eikon = date_today
+else:
+    end_date_eikon = date_today + datetime.timedelta(days=1)
+
+# %%
+import eikon as ek
+import pandas as pd
+from sqlalchemy import create_engine
+pymysql.install_as_MySQLdb()
+import MySQLdb
+
+
+ek.set_app_key('8ee143628de84818a8b12f4f55be35674e136d08')
+
+if (end_date_eikon > start_date_eikon):
+    df_eikon = ek.get_timeseries(["10TBc1"],
+                                 fields=['OPEN','HIGH','LOW','CLOSE','VOLUME'],
+                                 start_date = start_date_eikon.isoformat(),
+                                 end_date = end_date_eikon.isoformat(),
+                                 interval = "minute"
+                                )
+    #df_local = df_eikon.tz_localize('UTC').tz_convert('Asia/Seoul')
+    df_eikon.index += pd.offsets.Hour(9)
+    db_data = 'mysql+mysqldb://root:' + 'mysql_rootuser' + '@localhost/market_data'
+    engine = create_engine(db_data)
+    conn = pymysql.connect(host='localhost', user='root', password='mysql_rootuser', db='market_data',charset='utf8mb4')
+    curs = conn.cursor()
+    df_eikon.to_sql('lktb', engine, if_exists='append')
+    engine.dispose()
+    conn.close()
+
 
 # In[1]:
 
@@ -140,7 +186,7 @@ list_day.index(input_end_date)
 # eikon 현재data retrieve
 import eikon as ek
 
-ek.set_app_key('f2281c91621d4279b832b42dc848b573dc4ea62a')
+ek.set_app_key('8ee143628de84818a8b12f4f55be35674e136d08')
 try:
     df_eikon = ek.get_timeseries(["10TBc1"], 
                            start_date="2019-12-18",
