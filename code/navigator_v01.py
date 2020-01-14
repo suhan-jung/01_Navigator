@@ -28,6 +28,7 @@ import eikon as ek
 import pandas as pd
 from sqlalchemy import create_engine
 pymysql.install_as_MySQLdb()
+
 import MySQLdb
 
 
