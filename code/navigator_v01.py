@@ -210,8 +210,8 @@ try:
     start_date_eikon = end_date_db + datetime.timedelta(days=1) # eikon 조회용 start_date
     end_date_eikon = start_date_eikon + datetime.timedelta(days=1) # eikon 조회용 start_date
     df_eikon = ek.get_timeseries(["10TBc1"], 
-                           start_date = start_date_eikon,
-                           end_date = end_date_eikon,
+                           start_date = start_date_eikon.isoformat(),
+                           end_date = end_date_eikon.isoformat(),
                            interval = "minute"
                            )
 except:
