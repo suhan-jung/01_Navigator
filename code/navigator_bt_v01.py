@@ -13,7 +13,7 @@ resample_minutes = 10 # 가격주기 : 10 mins
 date_split = '2019-01-01'
 
 # %% 1min 단위의 raw data 받아오기
-df_infomax = pd.read_csv("../data/LKTB_infomax_1m.csv")
+df_infomax = pd.read_csv("./data/LKTB_infomax_1m.csv")
 df_infomax['DATETIME'] = pd.to_datetime(df_infomax['DATE'] + ' ' + df_infomax['TIME'])
 df = df_infomax.drop(['DATE', 'TIME'], axis=1)
 df = df.set_index('DATETIME')
